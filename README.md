@@ -13,6 +13,5 @@ Simple React Native Shopping List
 
 ## App Screenshots
 
-![List Section](https://user-images.githubusercontent.com/37207831/38600863-430df20c-3d98-11e8-9538-81f6e1c8f2b5.png)
-
-![Items Section](https://user-images.githubusercontent.com/37207831/38600894-5a11b95c-3d98-11e8-848c-0fa0dc7f3126.png)
+<img align="left" width="350" src="https://user-images.githubusercontent.com/37207831/38600863-430df20c-3d98-11e8-9538-81f6e1c8f2b5.png">
+<img align="left" width="350" src="https://user-images.githubusercontent.com/37207831/38600894-5a11b95c-3d98-11e8-848c-0fa0dc7f3126.png">
