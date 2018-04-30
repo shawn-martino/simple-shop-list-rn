@@ -5,11 +5,11 @@ import {
   View,
   ScrollView,
   StyleSheet,
-  Keyboard,
   Button,
   Text,
   TextInput,
-  DrawerLayoutAndroid,
+  Modal,
+  Image,
   Dimensions,
   TouchableHighlight,
 } from 'react-native';
@@ -29,9 +29,9 @@ class ItemForm extends Component {
     measure: 'units',
     cost: '',
     notes: '',
-    shouldRenderCamera: false,
     hasCameraPermission: null,
     hasFormSubmitted: false,
+    modalVisible: false,
   };
 
   async componentWillMount() {
@@ -62,7 +62,7 @@ class ItemForm extends Component {
 
   onBarcodeRead = (e) => {
     this.setState({ barcode: e.data });
-    this.closeDrawer();
+    this.modalVisible();
   };
 
   onShopChange = value => this.setState({ shop: value });
@@ -117,12 +117,6 @@ class ItemForm extends Component {
       notes: '',
     });
 
-  onClearBarcode = () => {
-    this.setState({
-      barcode: '',
-    });
-  };
-
   onDeleteItem = () => {
     Alert.alert(
       'Are you sure?',
@@ -141,139 +135,200 @@ class ItemForm extends Component {
     );
   };
 
-  closeDrawer = () => {
-    this.drawer.closeDrawer();
-    this.setState({ shouldRenderCamera: false });
-  };
-  openDrawer = () => {
-    Keyboard.dismiss();
-    this.drawer.openDrawer();
-    this.setState({ shouldRenderCamera: true });
+  modalVisible = () => {
+    this.setState({
+      modalVisible: !this.state.modalVisible,
+      barcodeVisible: !this.state.modalVisible,
+    });
   };
 
-  _renderCamera = () => (
-    <View style={{ flex: 1, backgroundColor: 'red' }}>
-      {this.state.shouldRenderCamera && this.state.hasCameraPermission ? (
-        <BarCodeScanner
-          onBarCodeRead={this.onBarcodeRead}
-          style={styles.cameraPreview}
-        />
-      ) : null}
-    </View>
+  _renderModal = () => (
+    <Modal
+      animationType="fade"
+      transparent
+      visible={this.state.modalVisible}
+      onRequestClose={this.modalVisible}
+    >
+      <View
+        style={{
+          flex: 1,
+          paddingHorizontal: 30,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <Text
+            style={[
+              {
+                color: 'white',
+                fontSize: 28,
+                paddingVertical: 15,
+              },
+              this.state.fontLoaded ? { fontFamily: 'Sketch' } : null,
+            ]}
+          >
+            Scan a Barcode
+          </Text>
+        </View>
+        <View
+          style={{
+            flex: 1,
+            maxHeight: 250,
+            width: '100%',
+          }}
+        >
+          {this.state.hasCameraPermission &&
+            this.state.barcodeVisible && (
+              <View
+                style={{
+                  flex: 1,
+                }}
+              >
+                <Image
+                  style={{
+                    position: 'absolute',
+                    width: 200,
+                    height: 150,
+                    top: 50,
+                    left: width / 2 - 130,
+                    zIndex: 500,
+                  }}
+                  source={require('../../assets/images/barcodeBg.png')}
+                  resizeMode="cover"
+                />
+                <BarCodeScanner
+                  onBarCodeRead={this.onBarCodeRead}
+                  style={styles.cameraPreview}
+                />
+              </View>
+            )}
+        </View>
+        <View style={{ marginTop: 10 }}>
+          <Button onPress={this.modalVisible} title="CANCEL" color="crimson" />
+        </View>
+      </View>
+    </Modal>
   );
 
   render() {
     return (
-      <DrawerLayoutAndroid
-        drawerWidth={width * 0.75}
-        drawerPosition={DrawerLayoutAndroid.positions.Right}
-        ref={(_drawer) => {
-          this.drawer = _drawer;
-        }}
-        renderNavigationView={this._renderCamera}
-        drawerLockMode="locked-closed"
-      >
-        <ScrollView style={{ backgroundColor: '#215921' }}>
-          <View style={styles.container}>
-            <View>
-              <Text style={styles.textLabel}>Name of Product</Text>
+      <ScrollView style={{ backgroundColor: '#215921' }}>
+        <View style={styles.container}>
+          <View>
+            <Text style={styles.textLabel}>Name of Product</Text>
+            <TextInput
+              underlineColorAndroid="transparent"
+              style={styles.textInput}
+              value={this.state.name}
+              onChangeText={this.onNameChange}
+              autoCapitalize="words"
+            />
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginTop: 15,
+            }}
+          >
+            <View style={{ flex: 1, marginRight: 1 }}>
+              <Text style={styles.textLabel}>Shop</Text>
               <TextInput
                 underlineColorAndroid="transparent"
                 style={styles.textInput}
-                value={this.state.name}
-                onChangeText={this.onNameChange}
+                value={this.state.shop}
+                onChangeText={this.onShopChange}
                 autoCapitalize="words"
               />
             </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginTop: 15,
-              }}
-            >
-              <View style={{ flex: 1, marginRight: 1 }}>
-                <Text style={styles.textLabel}>Shop</Text>
+            {this.props.showBarcode ? (
+              <View style={{ flex: 1, marginLeft: 1 }}>
+                <Text style={styles.textLabel}>Barcode</Text>
                 <TextInput
                   underlineColorAndroid="transparent"
                   style={styles.textInput}
-                  value={this.state.shop}
-                  onChangeText={this.onShopChange}
-                  autoCapitalize="words"
+                  value={this.state.barcode}
+                  onChangeText={this.onBarcodeChange}
                 />
+                <TouchableHighlight
+                  onPress={this.modalVisible}
+                  hitSlop={{ right: 10, top: 10, bottom: 10 }}
+                  style={{
+                    position: 'absolute',
+                    top: 38,
+                    right: 5,
+                    borderRadius: 10,
+                  }}
+                >
+                  <Icon name="camera-alt" size={20} color="grey" />
+                </TouchableHighlight>
               </View>
-              {this.props.showBarcode ? (
-                <View style={{ flex: 1, marginLeft: 1 }}>
-                  <Text style={styles.textLabel}>Barcode</Text>
-                  <TextInput
-                    underlineColorAndroid="transparent"
-                    style={styles.textInput}
-                    value={this.state.barcode}
-                    onChangeText={this.onBarcodeChange}
-                    onFocus={this.openDrawer}
-                  />
-                  <TouchableHighlight
-                    onPress={this.onClearBarcode}
-                    hitSlop={{ right: 10, top: 10, bottom: 10 }}
-                    style={{
-                      position: 'absolute',
-                      top: 38,
-                      right: 5,
-                      borderRadius: 10,
-                    }}
-                  >
-                    <Icon name="clear" size={20} color="grey" />
-                  </TouchableHighlight>
-                </View>
-              ) : null}
-            </View>
+            ) : null}
+          </View>
 
-            <FormQuantityPicker
-              measure={this.state.measure}
-              onPickerValueChange={this.onPickerValueChange}
-              qty={this.state.qty}
-              onQuantityChange={this.onQuantityChange}
-              renderCostForMeasure={this.renderCostForMeasure}
-              cost={this.state.cost}
-              onCostChange={this.onCostChange}
+          <FormQuantityPicker
+            measure={this.state.measure}
+            onPickerValueChange={this.onPickerValueChange}
+            qty={this.state.qty}
+            onQuantityChange={this.onQuantityChange}
+            renderCostForMeasure={this.renderCostForMeasure}
+            cost={this.state.cost}
+            onCostChange={this.onCostChange}
+          />
+
+          <View
+            style={{
+              marginTop: 15,
+            }}
+          >
+            <Text style={styles.textLabel}>Notes</Text>
+            <TextInput
+              underlineColorAndroid="transparent"
+              value={this.state.notes}
+              onChangeText={this.onNotesChange}
+              style={[styles.textInput]}
+              editable
+              multiline
+              autoGrow
             />
+          </View>
 
-            <View
-              style={{
-                marginTop: 15,
-              }}
-            >
-              <Text style={styles.textLabel}>Notes</Text>
-              <TextInput
-                underlineColorAndroid="transparent"
-                value={this.state.notes}
-                onChangeText={this.onNotesChange}
-                style={[styles.textInput]}
-                editable
-                multiline
-                autoGrow
-              />
-            </View>
-
-            {!this.state.hasFormSubmitted && (
-              <View style={styles.formButtons}>
+          {!this.state.hasFormSubmitted && (
+            <View style={styles.formButtons}>
+              <View
+                style={{
+                  padding: 2,
+                  backgroundColor: 'white',
+                  borderRadius: 2,
+                }}
+              >
                 <Button
                   onPress={this.onSubmitForm}
                   title={this.props.submitButton}
-                  color="purple"
+                  color="blue"
                 />
-                {this.props.delete && (
-                  <Button
-                    onPress={this.onDeleteItem}
-                    title="Delete Item"
-                    color="crimson"
-                  />
-                )}
               </View>
-            )}
-          </View>
-        </ScrollView>
-      </DrawerLayoutAndroid>
+              {this.props.delete && (
+                <Button
+                  onPress={this.onDeleteItem}
+                  title="Delete Item"
+                  color="crimson"
+                />
+              )}
+            </View>
+          )}
+
+          {this._renderModal()}
+        </View>
+      </ScrollView>
     );
   }
 }

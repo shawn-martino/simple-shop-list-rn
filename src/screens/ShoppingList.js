@@ -41,7 +41,7 @@ class ShoppingList extends Component {
     };
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps) {
     return {
       sortedList: createOrganizedListArray(nextProps.list),
     };

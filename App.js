@@ -3,6 +3,7 @@ import { View, StatusBar, SafeAreaView, ActivityIndicator } from 'react-native';
 import { StackNavigator, TabNavigator } from 'react-navigation';
 
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons'; // eslint-disable-line
+import { Constants } from 'expo';
 
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/es/integration/react';
@@ -24,7 +25,14 @@ const MainScreenNavigator = TabNavigator(
         ShoppingList: {
           screen: ShoppingList,
         },
-        ShoppingListEditItem: { screen: ShoppingListEditItem },
+        ShoppingListEditItem: {
+          screen: ShoppingListEditItem,
+          navigationOptions: () => ({
+            headerStyle: {
+              marginTop: -Constants.statusBarHeight,
+            },
+          }),
+        },
       }),
       navigationOptions: () => ({
         tabBarLabel: 'Shop List',
@@ -38,7 +46,14 @@ const MainScreenNavigator = TabNavigator(
         Items: {
           screen: Items,
         },
-        ItemAddEdit: { screen: ItemAddEdit },
+        ItemAddEdit: {
+          screen: ItemAddEdit,
+          navigationOptions: () => ({
+            headerStyle: {
+              marginTop: -Constants.statusBarHeight,
+            },
+          }),
+        },
       }),
       navigationOptions: () => ({
         tabBarLabel: 'Items',
